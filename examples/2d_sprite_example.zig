@@ -31,7 +31,7 @@ pub fn load(com: ztg.Commands) !void {
     for (0..10) |_| {
         _ = try com.newEntWithMany(RlObject{
             try zrl.Sprite.init(com, "examples/smile.png"),
-            .{ .pos = ztg.Vec3.init(rl.GetRandomValue(0, rl.GetScreenWidth()), rl.GetRandomValue(0, rl.GetScreenHeight()), 0.0) },
+            ztg.base.Transform.initWith(.{ .pos = ztg.Vec3.init(rl.GetRandomValue(0, rl.GetScreenWidth()), rl.GetRandomValue(0, rl.GetScreenHeight()), 0.0) }),
         });
     }
 }
@@ -39,7 +39,7 @@ pub fn load(com: ztg.Commands) !void {
 pub fn update(q: ztg.Query(.{ztg.base.Transform})) void {
     if (rl.IsKeyPressed(rl.KEY_SPACE)) {
         for (q.items(0)) |tr| {
-            tr.pos = ztg.Vec3.init(rl.GetRandomValue(0, rl.GetScreenWidth()), rl.GetRandomValue(0, rl.GetScreenHeight()), 0.0);
+            tr.setPos(ztg.Vec3.init(rl.GetRandomValue(0, rl.GetScreenWidth()), rl.GetRandomValue(0, rl.GetScreenHeight()), 0.0));
         }
     }
 }
@@ -50,27 +50,29 @@ pub fn main() !void {
     const screen_height = 600;
 
     rl.InitWindow(screen_width, screen_height, "Untitled");
+    defer rl.CloseWindow();
+
     rl.SetTargetFPS(60);
 
-    var wi = ztg.worldInfo();
-    var world = try MyWorld.init(&wi);
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const alloc = gpa.allocator();
+
+    var world = try MyWorld.init(alloc);
     defer world.deinit();
 
-    try world.runLoadStages();
+    try world.runStage(.load);
 
     while (!rl.WindowShouldClose()) {
-        try world.runUpdateStages();
+        try world.runStage(.update);
 
         rl.BeginDrawing();
         rl.ClearBackground(rl.BLACK);
 
-        // .X_draw stages must be called between rl.BeginDrawing() and rl.EndDrawing()
-        try world.runDrawStages();
+        // .draw stage must be called between rl.BeginDrawing() and rl.EndDrawing()
+        try world.runStage(.draw);
 
         rl.EndDrawing();
 
         world.cleanForNextFrame();
     }
-
-    rl.CloseWindow();
 }

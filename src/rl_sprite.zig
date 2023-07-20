@@ -1,7 +1,6 @@
 const std = @import("std");
 const rl = @import("raylib");
 const ztg = @import("zentig");
-const zmath = @import("zmath");
 
 const Sprite = @This();
 
@@ -86,7 +85,7 @@ fn dr_sprites(cameras: ztg.Query(.{rl.Camera2D}), query: ztg.Query(.{ Sprite, zt
             rl.rlPushMatrix();
 
             if (comptime use_matrix) {
-                rl.rlMultMatrixf(&zmath.matToArr(trn.getGlobalMatrix()));
+                rl.rlMultMatrixf(&ztg.zmath.matToArr(trn.getGlobalMatrix()));
 
                 const pivot_scaled = spr.pivot.intoSimd() * @Vector(3, f32){ spr.source.width, spr.source.height, 1 };
                 rl.rlTranslatef(-pivot_scaled[0], -pivot_scaled[1], -pivot_scaled[2]);

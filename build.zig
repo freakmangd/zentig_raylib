@@ -14,7 +14,7 @@ pub fn build(b: *Build) void {
     b.installArtifact(raylib);
 
     const raylib_mod = b.addModule("raylib", .{
-        .source_file = .{ .path = Build.FileSource.relative("src/init_raylib.zig") },
+        .source_file = Build.FileSource.relative("src/init_raylib.zig"),
     });
 
     const zentig_dep = b.dependency("zentig", .{});

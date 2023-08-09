@@ -45,11 +45,11 @@ pub fn build(b: *Build) void {
 }
 
 pub fn addAsLocalModule(
-    mod_name: []const u8,
     zentig_mod: anytype, // only doing anytype so i dont have to figure out how to get the actual type
-    rl_build: anytype,
-    rl_include_path: []const u8,
+    comptime rl_build: type,
     options: struct {
+        name: []const u8,
+        rl_include_path: []const u8,
         import_raylib_as: ?[]const u8 = null,
         override_target: ?std.zig.CrossTarget = null,
         override_optimize: ?std.builtin.OptimizeMode = null,
@@ -67,7 +67,7 @@ pub fn addAsLocalModule(
     });
 
     if (options.import_raylib_as) |impas| exe.addModule(impas, raylib_mod);
-    exe.addIncludePath(.{ .path = rl_include_path });
+    exe.addIncludePath(.{ .path = options.rl_include_path });
     exe.linkLibrary(raylib);
 
     const zentig_rl = b.createModule(.{
@@ -78,7 +78,7 @@ pub fn addAsLocalModule(
             .{ .name = "raylib", .module = raylib_mod },
         },
     });
-    exe.addModule(mod_name, zentig_rl);
+    exe.addModule(options.name, zentig_rl);
 
     return .{ .raylib = raylib_mod, .zrl = zentig_rl };
 }

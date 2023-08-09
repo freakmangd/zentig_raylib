@@ -9,6 +9,11 @@ pub const Sprite = @import("sprite.zig");
 pub const SpriteBundle = @import("sprite_bundle.zig");
 pub const Camera2dBundle = @import("cam2d.zig").Camera2dBundle;
 
+pub fn include(comptime wb: *ztg.WorldBuilder) void {
+    wb.include(&.{ ztg.base, Sprite, Camera2dBundle });
+    wb.addSystemsToStage(.pre_update, ztg.before(.body, pru_time));
+}
+
 pub const physics = struct {
     pub const ColBox = @import("box_list.zig");
 
@@ -88,11 +93,6 @@ pub fn defaultLoopProfiled(world: anytype, profiler_writer: anytype, options: st
 
         world.cleanForNextFrame();
     }
-}
-
-pub fn include(comptime wb: *ztg.WorldBuilder) void {
-    wb.include(&.{ ztg.base, Sprite, Camera2dBundle });
-    wb.addSystemsToStage(.pre_update, ztg.before(.body, pru_time));
 }
 
 fn pru_time(time: *ztg.base.Time) void {

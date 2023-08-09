@@ -1,6 +1,6 @@
 .{
     .name = "zentig-raylib",
-    .version = "0.0.1",
+    .version = "0.1.0",
     .dependencies = .{
         .raylib = .{
             .url = "https://github.com/raysan5/raylib/archive/7124a14a60a4bf7e4357030395750e03a1b976b2.tar.gz",

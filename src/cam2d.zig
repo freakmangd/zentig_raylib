@@ -19,7 +19,7 @@ pub const Camera2dBundle = struct {
 
     pub fn include(comptime wb: *ztg.WorldBuilder) void {
         wb.addComponents(&.{rl.Camera2D});
-        wb.addSystemsToStage(.load, .{ztg.after(.body, pol_checkCams)});
+        wb.addSystemsToStage(.load, ztg.after(.body, pol_checkCams));
     }
 
     fn pol_checkCams(cameras: ztg.Query(.{rl.Camera2D})) void {

@@ -2,11 +2,46 @@ const std = @import("std");
 const ztg = @import("zentig");
 const rl = @import("raylib");
 
-pub usingnamespace @import("rl_input.zig");
+pub usingnamespace @import("input.zig");
+pub usingnamespace rl;
 
-pub const raylib = rl;
-pub const Sprite = @import("rl_sprite.zig");
-pub const Camera2dBundle = @import("rl_cam2d.zig").Camera2dBundle;
+pub const Sprite = @import("sprite.zig");
+pub const SpriteBundle = @import("sprite_bundle.zig");
+pub const Camera2dBundle = @import("cam2d.zig").Camera2dBundle;
+
+pub const physics = struct {
+    pub const ColBox = @import("box_list.zig");
+
+    pub fn include(comptime wb: *ztg.WorldBuilder) void {
+        wb.include(&.{ColBox});
+    }
+};
+
+pub const util = struct {
+    /// Creates an entity with the specified components,
+    /// centers it, and returns the handle to the entity
+    pub fn newCenteredEnt(com: ztg.Commands, components: anytype) !ztg.EntityHandle {
+        const ent = try com.newEntWithMany(components);
+        centerEntity(com, ent.ent);
+        return ent;
+    }
+
+    /// Creates a child entity parented to `parent` with the specified components,
+    /// centers it, and returns the handle to the entity
+    pub fn newCenteredChild(com: ztg.Commands, parent: ztg.Entity, components: anytype) !ztg.EntityHandle {
+        const child = try com.newEntWithMany(components);
+        try child.setParent(parent);
+        centerEntity(com, child.ent);
+        return child;
+    }
+
+    /// Adjusts sprite and collision box offsets so that
+    /// they are centered around the entity position
+    pub fn centerEntity(com: ztg.Commands, ent: ztg.Entity) void {
+        if (com.getComponentPtr(ent, Sprite)) |spr| spr.setCentered();
+        if (com.hasIncluded(physics)) if (com.getComponentPtr(ent, physics.ColBox)) |box| box.setCentered();
+    }
+};
 
 pub const log = std.log.scoped(.zentig_raylib);
 
@@ -16,7 +51,7 @@ pub fn defaultLoop(world: anytype, options: struct {
     try world.runStage(.load);
 
     while (!rl.WindowShouldClose()) {
-        try world.runStage(.update);
+        try world.runUpdateStages();
 
         rl.BeginDrawing();
         rl.ClearBackground(options.clear_color);
@@ -30,26 +65,26 @@ pub fn defaultLoop(world: anytype, options: struct {
 pub fn defaultLoopProfiled(world: anytype, profiler_writer: anytype, options: struct {
     clear_color: rl.Color = rl.BLACK,
 }) !void {
-    ztg.profiler.startSection("MAIN_LOOP load");
+    var load_sec = ztg.profiler.startSection("MAIN_LOOP load");
     try world.runStage(.load);
-    ztg.profiler.endSection("MAIN_LOOP load");
+    load_sec.end();
 
     while (!rl.WindowShouldClose()) {
         defer ztg.profiler.report(profiler_writer, rl.GetFrameTime());
 
-        ztg.profiler.startSection("MAIN_LOOP frame");
-        defer ztg.profiler.endSection("MAIN_LOOP frame");
+        var frame_sec = ztg.profiler.startSection("MAIN_LOOP frame");
+        defer frame_sec.end();
 
-        ztg.profiler.startSection("MAIN_LOOP update");
-        try world.runStage(.update);
-        ztg.profiler.endSection("MAIN_LOOP update");
+        var update_sec = ztg.profiler.startSection("MAIN_LOOP update");
+        try world.runUpdateStages();
+        update_sec.end();
 
-        ztg.profiler.startSection("MAIN_LOOP draw");
+        var draw_sec = ztg.profiler.startSection("MAIN_LOOP draw");
         rl.BeginDrawing();
         rl.ClearBackground(options.clear_color);
         try world.runStage(.draw);
         rl.EndDrawing();
-        ztg.profiler.endSection("MAIN_LOOP draw");
+        draw_sec.end();
 
         world.cleanForNextFrame();
     }
@@ -57,7 +92,7 @@ pub fn defaultLoopProfiled(world: anytype, profiler_writer: anytype, options: st
 
 pub fn include(comptime wb: *ztg.WorldBuilder) void {
     wb.include(&.{ ztg.base, Sprite, Camera2dBundle });
-    wb.addSystemsToStage(.update, .{ztg.before(.body, pru_time)});
+    wb.addSystemsToStage(.pre_update, ztg.before(.body, pru_time));
 }
 
 fn pru_time(time: *ztg.base.Time) void {

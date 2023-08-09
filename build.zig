@@ -9,7 +9,6 @@ pub fn build(b: *Build) void {
         .target = target,
         .optimize = optimize,
     });
-
     const raylib = raylib_dep.artifact("raylib");
     b.installArtifact(raylib);
 
@@ -45,9 +44,9 @@ pub fn build(b: *Build) void {
     example_step.dependOn(&run_example.step);
 }
 
-pub fn addAsModule(
+pub fn addAsLocalModule(
     mod_name: []const u8,
-    zentig_mod: anytype,
+    zentig_mod: anytype, // only doing anytype so i dont have to figure out how to get the actual type
     rl_build: anytype,
     rl_include_path: []const u8,
     options: struct {
@@ -68,7 +67,7 @@ pub fn addAsModule(
     });
 
     if (options.import_raylib_as) |impas| exe.addModule(impas, raylib_mod);
-    exe.addIncludePath(rl_include_path);
+    exe.addIncludePath(.{ .path = rl_include_path });
     exe.linkLibrary(raylib);
 
     const zentig_rl = b.createModule(.{

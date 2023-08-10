@@ -22,6 +22,8 @@ pub fn build(b: *Build) void {
     });
     const zentig_mod = zentig_dep.module("zentig");
 
+    b.modules.put("zentig", zentig_mod) catch @panic("OOM");
+
     const zentig_raylib = b.addModule("zentig-raylib", .{
         .source_file = Build.FileSource.relative("src/init.zig"),
         .dependencies = &.{
@@ -29,6 +31,8 @@ pub fn build(b: *Build) void {
             .{ .name = "raylib", .module = raylib_mod },
         },
     });
+
+    // Local testing
 
     const examples = [_]struct { []const u8, []const u8, []const u8 }{
         .{ "2d_sprite", "examples/2d_sprite_example.zig", "Run 2d sprite example" },

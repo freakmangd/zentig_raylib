@@ -40,6 +40,7 @@ const zrl_dep = b.dependency("zentig_raylib", .{
     .target = target,
     .optimize = optimize,
 });
-const zrl_mod = zentig_dep.module("zentig-raylib");
-exe.addModule("zrl", zrl_mod);
+exe.addModule("zentig", zrl_dep.module("zentig")); // Zentig raylib exposes zentig so you only need one dependency
+exe.addModule("zrl", zrl_dep.module("zentig-raylib"));
+exe.linkLibrary(zrl_dep.artifact("raylib"));
 ```

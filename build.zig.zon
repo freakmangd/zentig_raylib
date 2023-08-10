@@ -3,12 +3,12 @@
     .version = "0.1.0",
     .dependencies = .{
         .raylib = .{
-            .url = "https://github.com/raysan5/raylib/archive/7124a14a60a4bf7e4357030395750e03a1b976b2.tar.gz",
-            .hash = "1220cb899cf05b87a116323b64419278bddb116b07394c3a5ce60c65f6aae7fafc8a",
+            .url = "https://github.com/raysan5/raylib/archive/90f17499658275ace1e4d1bed1aa231e34ac38b6.tar.gz",
+            .hash = "1220d50a2701c46df69863c3160056e596b619bd0bcc8f64c8a7cf436da5e990e5eb",
         },
         .zentig = .{
             .url = "https://github.com/freakmangd/zentig_ecs/archive/refs/heads/dev.tar.gz",
-            .hash = "12203bab6e4a2b991435e220a0407247e9fc94b9d6cc904ce59bb4d6d543741dd15d",
+            .hash = "1220e27bb624b59ffa8b75e7d19eb7218cbdd3bf7aed731ae358f09ed5e3b1610dd4",
         },
     },
 }

@@ -5,9 +5,9 @@ Raylib bindings and ecs wrappers for zentig
 
 Mods available for the `WorldBuilder` are:
 
-(assuming `zrl == @import("zentig-raylib");`)<br>
-+ `zrl`
-+ `zrl.physics`
+(assuming `zrl == @import("zentig-raylib");`)
++ `zrl` contains: `Sprite`, `Camera2d`
++ `zrl.physics` - contains: `ColBox`
 
 ## Installation
 

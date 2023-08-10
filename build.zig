@@ -16,32 +16,42 @@ pub fn build(b: *Build) void {
         .source_file = Build.FileSource.relative("src/init_raylib.zig"),
     });
 
-    const zentig_dep = b.dependency("zentig", .{});
+    const zentig_dep = b.dependency("zentig", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const zentig_mod = zentig_dep.module("zentig");
 
     const zentig_raylib = b.addModule("zentig-raylib", .{
         .source_file = Build.FileSource.relative("src/init.zig"),
         .dependencies = &.{
-            .{ .name = "zentig", .module = zentig_dep.module("zentig") },
+            .{ .name = "zentig", .module = zentig_mod },
             .{ .name = "raylib", .module = raylib_mod },
         },
     });
 
-    // Examples
-    const example = b.addExecutable(.{
-        .name = "zentig-raylib-example",
-        .root_source_file = Build.FileSource.relative("examples/2d_sprite_example.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    example.addModule("raylib", raylib_mod);
-    example.addModule("zentig", zentig_dep.module("zentig"));
-    example.addModule("zrl", zentig_raylib);
-    example.linkLibrary(raylib);
+    const examples = [_]struct { []const u8, []const u8, []const u8 }{
+        .{ "2d_sprite", "examples/2d_sprite_example.zig", "Run 2d sprite example" },
+        .{ "topdown_movement", "examples/2d_topdown_movement.zig", "Run 2d topdown movement example" },
+    };
 
-    const run_example = b.addRunArtifact(example);
-    const example_step = b.step("2d_sprite", "Run 2d sprite example");
+    for (examples) |ex_info| {
+        const example = b.addExecutable(.{
+            .name = ex_info[0],
+            .root_source_file = .{ .path = ex_info[1] },
+            .target = target,
+            .optimize = optimize,
+        });
 
-    example_step.dependOn(&run_example.step);
+        example.addModule("zentig", zentig_mod);
+        example.addModule("zrl", zentig_raylib);
+        example.linkLibrary(raylib);
+
+        const run_example_cmd = b.addRunArtifact(example);
+
+        const run_example_step = b.step(ex_info[0], ex_info[2]);
+        run_example_step.dependOn(&run_example_cmd.step);
+    }
 }
 
 pub fn addAsLocalModule(

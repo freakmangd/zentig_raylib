@@ -1,6 +1,5 @@
 const std = @import("std");
 const ztg = @import("zentig");
-const rl = @import("raylib");
 const zrl = @import("zrl");
 
 // Constructing the world must be done at comptime.
@@ -20,8 +19,9 @@ const RlObject = struct {
 
 pub fn include(comptime wb: *ztg.WorldBuilder) void {
     wb.addSystems(.{
-        .load = .{load},
-        .update = .{update},
+        .load = load,
+        .update = update,
+        .draw = ztg.after(.body, pod_gui),
     });
 }
 
@@ -30,18 +30,22 @@ pub fn load(com: ztg.Commands) !void {
 
     for (0..10) |_| {
         _ = try com.newEntWithMany(RlObject{
-            try zrl.Sprite.init(com, "examples/smile.png"),
-            ztg.base.Transform.initWith(.{ .pos = ztg.vec3(rl.GetRandomValue(0, rl.GetScreenWidth()), rl.GetRandomValue(0, rl.GetScreenHeight()), 0.0) }),
+            zrl.Sprite.initAssert(com, "examples/smile.png"),
+            ztg.base.Transform.initWith(.{ .pos = ztg.vec3(zrl.GetRandomValue(0, zrl.GetScreenWidth()), zrl.GetRandomValue(0, zrl.GetScreenHeight()), 0.0) }),
         });
     }
 }
 
 pub fn update(q: ztg.Query(.{ztg.base.Transform})) void {
-    if (rl.IsKeyPressed(rl.KEY_SPACE)) {
+    if (zrl.IsKeyPressed(zrl.KEY_SPACE)) {
         for (q.items(0)) |tr| {
-            tr.setPos(ztg.vec3(rl.GetRandomValue(0, rl.GetScreenWidth()), rl.GetRandomValue(0, rl.GetScreenHeight()), 0.0));
+            tr.setPos(ztg.vec3(zrl.GetRandomValue(0, zrl.GetScreenWidth()), zrl.GetRandomValue(0, zrl.GetScreenHeight()), 0.0));
         }
     }
+}
+
+pub fn pod_gui() void {
+    zrl.DrawText("Press space to randomize the sprite positions", 0, 0, 20, zrl.WHITE);
 }
 
 pub fn main() !void {
@@ -49,10 +53,10 @@ pub fn main() !void {
     const screen_width = 800;
     const screen_height = 600;
 
-    rl.InitWindow(screen_width, screen_height, "Untitled");
-    defer rl.CloseWindow();
+    zrl.InitWindow(screen_width, screen_height, "Untitled");
+    defer zrl.CloseWindow();
 
-    rl.SetTargetFPS(60);
+    zrl.SetTargetFPS(60);
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const alloc = gpa.allocator();
@@ -62,16 +66,16 @@ pub fn main() !void {
 
     try world.runStage(.load);
 
-    while (!rl.WindowShouldClose()) {
-        try world.runStage(.update);
+    while (!zrl.WindowShouldClose()) {
+        try world.runUpdateStages();
 
-        rl.BeginDrawing();
-        rl.ClearBackground(rl.BLACK);
+        zrl.BeginDrawing();
+        zrl.ClearBackground(zrl.BLACK);
 
         // .draw stage must be called between rl.BeginDrawing() and rl.EndDrawing()
         try world.runStage(.draw);
 
-        rl.EndDrawing();
+        zrl.EndDrawing();
 
         world.cleanForNextFrame();
     }

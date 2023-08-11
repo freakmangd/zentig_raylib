@@ -16,15 +16,6 @@ pub fn init(width: f32, height: f32) Self {
     };
 }
 
-pub fn initWith(width: f32, height: f32, options: struct {
-    offset: ztg.Vec2 = .{},
-}) Self {
-    return .{
-        .size = ztg.vec2(width, height),
-        .offset = options.offset,
-    };
-}
-
 pub fn setCentered(self: *Self) void {
     self.offset = self.size.div(2).getNegated();
 }
@@ -38,7 +29,7 @@ pub fn include(comptime wb: *ztg.WorldBuilder) void {
     });
 }
 
-fn rectFromBoxAndGtr(box: Self, gtr: ztg.base.GlobalTransform) rl.Rectangle {
+fn rectFromBoxAndGtr(box: *const Self, gtr: *const ztg.base.GlobalTransform) rl.Rectangle {
     return rl.rectangleV(
         gtr.getPos().flatten().add(box.offset),
         box.size.scale(gtr.getScale().flatten()),
@@ -46,16 +37,13 @@ fn rectFromBoxAndGtr(box: Self, gtr: ztg.base.GlobalTransform) rl.Rectangle {
 }
 
 fn pou_checkCollisions(alloc: ztg.FrameAlloc, q: ztg.Query(.{ Self, ztg.Entity, ztg.base.GlobalTransform })) !void {
-    var cc = ztg.profiler.startSection("cc");
-    defer cc.end();
-
     for (q.items(0), q.items(1), q.items(2)) |cb, ent, gtr| {
-        for (q.items(0), q.items(1), q.items(2)) |other, other_ent, other_gtr| {
-            cb.collisions = .{};
+        cb.collisions = .{};
 
+        for (q.items(0), q.items(1), q.items(2)) |other, other_ent, other_gtr| {
             if (ent != other_ent and rl.CheckCollisionRecs(
-                rectFromBoxAndGtr(cb.*, gtr.*),
-                rectFromBoxAndGtr(other.*, other_gtr.*),
+                rectFromBoxAndGtr(cb, gtr),
+                rectFromBoxAndGtr(other, other_gtr),
             )) {
                 try cb.collisions.append(alloc[0], other_ent);
             }
@@ -64,8 +52,8 @@ fn pou_checkCollisions(alloc: ztg.FrameAlloc, q: ztg.Query(.{ Self, ztg.Entity, 
 }
 
 fn draw(q: ztg.Query(.{ Self, ztg.base.GlobalTransform })) void {
+    if (!draw_boxes) return;
     for (q.items(0), q.items(1)) |box, gtr| {
-        if (!draw_boxes) continue;
-        rl.DrawRectangleLinesEx(rectFromBoxAndGtr(box.*, gtr.*), 3, rl.RED);
+        rl.DrawRectangleLinesEx(rectFromBoxAndGtr(box, gtr), 3, rl.RED);
     }
 }

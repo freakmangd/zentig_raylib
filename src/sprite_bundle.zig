@@ -33,3 +33,10 @@ pub fn initAssert(com: ztg.Commands, file_name: []const u8, pos: ztg.Vec3) Self 
         .transform = ztg.base.Transform.fromPos(pos),
     };
 }
+
+pub fn initAssertWith(com: ztg.Commands, file_name: []const u8, options: InitOptions) Self {
+    return .{
+        .sprite = zrl.Sprite.initAssertWith(com, file_name, options.sprite),
+        .transform = ztg.base.Transform.initWith(options.transform),
+    };
+}

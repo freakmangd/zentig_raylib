@@ -4,6 +4,8 @@ const rl = @import("raylib");
 const zrl = @import("init.zig");
 
 pub const Camera2dBundle = struct {
+    pub const is_component_bundle = true;
+
     cam: rl.Camera2D,
 
     pub fn init() Camera2dBundle {
@@ -24,7 +26,7 @@ pub const Camera2dBundle = struct {
 
     fn pol_checkCams(cameras: ztg.Query(.{rl.Camera2D})) void {
         if (cameras.len == 0) {
-            zrl.log.warn("No cameras detected after init stage. Try adding one with `commands.giveEntMany(ent, zrl.Camera2dBundle.init())`", .{});
+            zrl.log.warn("No cameras detected after load stage. Try adding one with `commands.giveComponents(ent, zrl.Camera2dBundle.init())`", .{});
         }
     }
 };

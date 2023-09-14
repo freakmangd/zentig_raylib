@@ -1,12 +1,13 @@
 const std = @import("std");
 const ztg = @import("zentig");
 const zrl = @import("zrl");
+const rl = zrl.rl;
 
 pub fn main() !void {
-    zrl.InitWindow(800, 600, "Untitled");
-    defer zrl.CloseWindow();
+    rl.InitWindow(800, 600, "Untitled");
+    defer rl.CloseWindow();
 
-    zrl.SetTargetFPS(500);
+    rl.SetTargetFPS(500);
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
@@ -35,16 +36,16 @@ pub const World = ztg.WorldBuilder.init(&.{
 }).Build();
 
 pub fn include(comptime wb: *ztg.WorldBuilder) void {
-    wb.addLoadSystems(load);
+    wb.addSystemsToStage(.load, load);
 }
 
 fn load(com: ztg.Commands, input: *Input) !void {
-    _ = try com.newEntWithMany(zrl.Camera2dBundle.init());
+    _ = try com.newEntWith(zrl.Camera2dBundle.init());
 
     try input.addBindings(0, .{
         .axes = .{
-            .horiz = &.{zrl.kbAxis(zrl.KEY_D, zrl.KEY_A)},
-            .vert = &.{zrl.kbAxis(zrl.KEY_W, zrl.KEY_S)},
+            .horiz = &.{zrl.kbAxis(rl.KEY_D, rl.KEY_A)},
+            .vert = &.{zrl.kbAxis(rl.KEY_W, rl.KEY_S)},
         },
     });
 }
@@ -65,7 +66,7 @@ const Player = struct {
             Player{},
             try zrl.SpriteBundle.initWith(com, "examples/smile.png", .{
                 .transform = .{
-                    .pos = ztg.vec3(zrl.GetScreenWidth(), zrl.GetScreenHeight(), 0).div(2),
+                    .pos = ztg.vec3(rl.GetScreenWidth(), rl.GetScreenHeight(), 0).div(2),
                 },
             }),
         });

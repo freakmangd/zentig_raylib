@@ -11,9 +11,7 @@ offset: ztg.Vec2 = .{},
 collisions: std.ArrayListUnmanaged(ztg.Entity) = .{},
 
 pub fn init(width: f32, height: f32) Self {
-    return .{
-        .size = ztg.vec2(width, height),
-    };
+    return .{ .size = ztg.vec2(width, height) };
 }
 
 pub fn setCentered(self: *Self) void {
@@ -36,6 +34,7 @@ fn rectFromBoxAndGtr(box: *const Self, gtr: *const ztg.base.GlobalTransform) rl.
     );
 }
 
+// this function is really bad but it works for testing
 fn pou_checkCollisions(alloc: ztg.FrameAlloc, q: ztg.Query(.{ Self, ztg.Entity, ztg.base.GlobalTransform })) !void {
     for (q.items(0), q.items(1), q.items(2)) |cb, ent, gtr| {
         cb.collisions = .{};

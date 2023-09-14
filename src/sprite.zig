@@ -1,6 +1,7 @@
 const std = @import("std");
 const rl = @import("raylib");
 const ztg = @import("zentig");
+const zrl = @import("init.zig");
 
 const Sprite = @This();
 
@@ -15,19 +16,10 @@ pub const InitOptions = struct {
     source: ?rl.Rectangle = null,
 };
 
-pub const TexIndex = struct { std.StringHashMap(rl.Texture2D) };
-
 /// Checks for missing files and caches textures by file_name
-pub fn init(com: ztg.Commands, file_name: []const u8) !Sprite {
-    var tex_index = com.getResPtr(TexIndex);
-
-    const tex = tex_index[0].get(file_name) orelse blk: {
-        const tex = rl.LoadTexture(file_name.ptr);
-        if (tex.id == 0) return error.FileNotFound;
-
-        try tex_index[0].put(file_name, tex);
-        break :blk tex;
-    };
+pub fn init(com: ztg.Commands, file_name: [:0]const u8) !Sprite {
+    var assets = com.getResPtr(zrl.Assets);
+    const tex = try assets.texture(file_name);
 
     return .{
         .tex = tex,
@@ -40,7 +32,7 @@ pub fn init(com: ztg.Commands, file_name: []const u8) !Sprite {
     };
 }
 
-pub fn initWith(com: ztg.Commands, file_name: []const u8, options: InitOptions) !Sprite {
+pub fn initWith(com: ztg.Commands, file_name: [:0]const u8, options: InitOptions) !Sprite {
     var self = try init(com, file_name);
     self.pivot = options.pivot;
     self.color = options.color;
@@ -49,12 +41,7 @@ pub fn initWith(com: ztg.Commands, file_name: []const u8, options: InitOptions) 
 }
 
 /// Asserts that the file exists and that there is no OOM error, panics otherwise
-pub fn initAssert(com: ztg.Commands, file_name: []const u8) Sprite {
-    return initAssertWith(com, file_name, .{});
-}
-
-/// Asserts that the file exists and that there is no OOM error, panics otherwise
-pub fn initAssertWith(com: ztg.Commands, file_name: []const u8, options: InitOptions) Sprite {
+pub fn initAssert(com: ztg.Commands, file_name: [:0]const u8, options: InitOptions) Sprite {
     return initWith(com, file_name, options) catch |err| switch (err) {
         error.FileNotFound => std.debug.panic("Could not find file {s}", .{file_name}),
         error.OutOfMemory => std.debug.panic("OOM error for sprite texture index", .{}),
@@ -69,26 +56,53 @@ pub fn setCentered(self: *Sprite) void {
     self.pivot = ztg.vec2(0.5, 0.5);
 }
 
+pub const Bundle = struct {
+    pub const is_component_bundle = true;
+
+    sprite: zrl.Sprite,
+    transform: ztg.base.Transform,
+
+    pub fn init(com: ztg.Commands, file_name: [:0]const u8, options: BundleInitOptions) !Bundle {
+        return .{
+            .sprite = try zrl.Sprite.initWith(com, file_name, .{
+                .color = options.color,
+                .pivot = options.pivot,
+                .source = options.source,
+            }),
+            .transform = ztg.base.Transform.initWith(.{
+                .pos = options.pos,
+                .rot = options.rot,
+                .scale = options.scale,
+            }),
+        };
+    }
+
+    pub fn initAssert(com: ztg.Commands, file_name: [:0]const u8, options: BundleInitOptions) Bundle {
+        return .{
+            .sprite = zrl.Sprite.initAssert(com, file_name, .{
+                .color = options.color,
+                .pivot = options.pivot,
+                .source = options.source,
+            }),
+            .transform = ztg.base.Transform.initWith(.{
+                .pos = options.pos,
+                .rot = options.rot,
+                .scale = options.scale,
+            }),
+        };
+    }
+
+    const BundleInitOptions = ztg.meta.CombineStructTypes(&.{ ztg.base.Transform.InitOptions, zrl.Sprite.InitOptions });
+    //        transform: ztg.base.Transform.InitOptions = .{},
+    //        sprite: zrl.Sprite.InitOptions = .{},
+    //    };
+};
+
 pub fn include(comptime wb: *ztg.WorldBuilder) void {
     wb.addComponents(&.{Sprite});
-    wb.addResource(TexIndex, .{undefined});
     wb.addSystems(.{
-        .init = .{ini_TexIndex},
         .draw = .{dr_sprites},
-        .deinit = .{dei_TexIndex},
     });
-}
-
-fn ini_TexIndex(alloc: std.mem.Allocator, tex_index: *TexIndex) void {
-    tex_index[0] = std.StringHashMap(rl.Texture2D).init(alloc);
-}
-
-fn dei_TexIndex(tex_index: *TexIndex) void {
-    var tex_iter = tex_index[0].valueIterator();
-    while (tex_iter.next()) |tex| {
-        rl.UnloadTexture(tex.*);
-    }
-    tex_index[0].deinit();
 }
 
 const use_matrix = true;

@@ -34,6 +34,21 @@ pub fn build(b: *Build) void {
 
     // Local testing
 
+    const all_tests = b.addTest(.{
+        .root_source_file = .{ .path = "src/init.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+    all_tests.addModule("zentig", zentig_mod);
+    all_tests.addModule("raylib", raylib_mod);
+    all_tests.linkLibrary(raylib);
+    all_tests.linkLibC();
+
+    const run_all_tests = b.addRunArtifact(all_tests);
+
+    const all_tests_step = b.step("test", "Run all tests and try to build all examples.");
+    all_tests_step.dependOn(&run_all_tests.step);
+
     const examples = [_]struct { []const u8, []const u8, []const u8 }{
         .{ "2d_sprite", "examples/2d_sprite_example.zig", "Run 2d sprite example" },
         .{ "topdown_movement", "examples/2d_topdown_movement.zig", "Run 2d topdown movement example" },
@@ -55,6 +70,8 @@ pub fn build(b: *Build) void {
 
         const run_example_step = b.step(ex_info[0], ex_info[2]);
         run_example_step.dependOn(&run_example_cmd.step);
+
+        all_tests_step.dependOn(&example.step);
     }
 }
 

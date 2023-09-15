@@ -7,8 +7,8 @@
             .hash = "1220d50a2701c46df69863c3160056e596b619bd0bcc8f64c8a7cf436da5e990e5eb",
         },
         .zentig = .{
-            .url = "https://github.com/freakmangd/zentig_ecs/archive/9d13c1ad325677af173eeb77827ef4f46c381efe.tar.gz",
-            .hash = "12209e365c7cdcc243b36cac7877566f6ad86de2536518d78f5d59989533f0dae708",
+            .url = "https://github.com/freakmangd/zentig_ecs/archive/a7711f5c85ba746a606d462ff2c83010cf1190ac.tar.gz",
+            .hash = "12203fffed30c2cb473edcdfb187ec8dac64aa2f33bbbc3895ce1754b9399344a7b7",
         },
     },
 }

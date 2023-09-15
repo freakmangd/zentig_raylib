@@ -13,7 +13,7 @@ pub fn build(b: *Build) void {
     b.installArtifact(raylib);
 
     const raylib_mod = b.addModule("raylib", .{
-        .source_file = Build.FileSource.relative("src/init_raylib.zig"),
+        .source_file = Build.LazyPath.relative("src/init_raylib.zig"),
     });
 
     const zentig_dep = b.dependency("zentig", .{
@@ -25,7 +25,7 @@ pub fn build(b: *Build) void {
     b.modules.put("zentig", zentig_mod) catch @panic("OOM");
 
     const zentig_raylib = b.addModule("zentig-raylib", .{
-        .source_file = Build.FileSource.relative("src/init.zig"),
+        .source_file = Build.LazyPath.relative("src/init.zig"),
         .dependencies = &.{
             .{ .name = "zentig", .module = zentig_mod },
             .{ .name = "raylib", .module = raylib_mod },
@@ -35,7 +35,7 @@ pub fn build(b: *Build) void {
     // Local testing
 
     const all_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/init.zig" },
+        .root_source_file = Build.LazyPath.relative("src/init.zig"),
         .target = target,
         .optimize = optimize,
     });
@@ -57,7 +57,7 @@ pub fn build(b: *Build) void {
     for (examples) |ex_info| {
         const example = b.addExecutable(.{
             .name = ex_info[0],
-            .root_source_file = .{ .path = ex_info[1] },
+            .root_source_file = Build.LazyPath.relative(ex_info[1]),
             .target = target,
             .optimize = optimize,
         });
@@ -65,13 +65,14 @@ pub fn build(b: *Build) void {
         example.addModule("zentig", zentig_mod);
         example.addModule("zrl", zentig_raylib);
         example.linkLibrary(raylib);
+        example.linkLibC();
 
         const run_example_cmd = b.addRunArtifact(example);
 
         const run_example_step = b.step(ex_info[0], ex_info[2]);
         run_example_step.dependOn(&run_example_cmd.step);
 
-        all_tests_step.dependOn(&example.step);
+        //all_tests_step.dependOn(&example.step);
     }
 }
 

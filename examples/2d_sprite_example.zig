@@ -31,7 +31,7 @@ pub fn load(com: ztg.Commands) !void {
 
     for (0..10) |_| {
         _ = try com.newEntWith(RlObject{
-            zrl.Sprite.initAssert(com, "examples/smile.png"),
+            zrl.Sprite.initAssert(com, "examples/smile.png", .{}),
             ztg.base.Transform.initWith(.{ .pos = ztg.vec3(rl.GetRandomValue(0, rl.GetScreenWidth()), rl.GetRandomValue(0, rl.GetScreenHeight()), 0.0) }),
         });
     }

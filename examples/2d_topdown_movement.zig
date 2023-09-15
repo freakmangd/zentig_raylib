@@ -16,7 +16,7 @@ pub fn main() !void {
     var world = try World.init(alloc);
     defer world.deinit();
 
-    try zrl.defaultLoop(world, .{});
+    try zrl.defaultLoop(&world, .{});
 }
 
 pub const Input = ztg.input.Build(
@@ -64,10 +64,8 @@ const Player = struct {
     fn ld_spawnPlayer(com: ztg.Commands) !void {
         _ = try zrl.util.newCenteredEnt(com, .{
             Player{},
-            try zrl.SpriteBundle.initWith(com, "examples/smile.png", .{
-                .transform = .{
-                    .pos = ztg.vec3(rl.GetScreenWidth(), rl.GetScreenHeight(), 0).div(2),
-                },
+            try zrl.Sprite.Bundle.init(com, "examples/smile.png", .{
+                .pos = ztg.vec3(rl.GetScreenWidth(), rl.GetScreenHeight(), 0).div(2),
             }),
         });
     }

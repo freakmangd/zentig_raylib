@@ -72,7 +72,7 @@ pub fn build(b: *Build) void {
         const run_example_step = b.step(ex_info[0], ex_info[2]);
         run_example_step.dependOn(&run_example_cmd.step);
 
-        //all_tests_step.dependOn(&example.step);
+        all_tests_step.dependOn(&example.step);
     }
 }
 

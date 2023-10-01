@@ -16,11 +16,17 @@ pub fn build(b: *Build) void {
         .source_file = Build.LazyPath.relative("src/init_raylib.zig"),
     });
 
-    const zentig_dep = b.dependency("zentig", .{
-        .target = target,
-        .optimize = optimize,
-    });
-    const zentig_mod = zentig_dep.module("zentig");
+    const zentig_path_ptr = b.option(usize, "zentig_module_ptr", "override zentig module ptr");
+
+    const zentig_mod: *Build.Module = if (zentig_path_ptr) |ptr| blk: {
+        break :blk @ptrFromInt(ptr);
+    } else blk: {
+        const zentig_dep = b.dependency("zentig", .{
+            .target = target,
+            .optimize = optimize,
+        });
+        break :blk zentig_dep.module("zentig");
+    };
 
     b.modules.put("zentig", zentig_mod) catch @panic("OOM");
 

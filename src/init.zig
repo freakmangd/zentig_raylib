@@ -3,13 +3,14 @@ const ztg = @import("zentig");
 
 pub const rl = @import("raylib");
 pub usingnamespace @import("input.zig");
+pub const AnimWrapper = @import("anim_wrapper.zig");
 
 pub const Sprite = @import("sprite.zig");
 pub const Camera2dBundle = @import("cam2d.zig").Camera2dBundle;
 pub const Assets = @import("assets.zig");
 
 pub fn include(comptime wb: *ztg.WorldBuilder) void {
-    wb.include(&.{ ztg.base, Sprite, Camera2dBundle, Assets });
+    wb.include(&.{ ztg.base, Camera2dBundle, Sprite, Assets });
     wb.addSystemsToStage(.pre_update, ztg.before(.body, pru_time));
 }
 
@@ -48,6 +49,17 @@ pub const util = struct {
 };
 
 pub const log = std.log.scoped(.zentig_raylib);
+
+pub fn drawThroughCams(world: anytype) !void {
+    if (comptime !std.meta.trait.isSingleItemPtr(@TypeOf(world))) @compileError(std.fmt.comptimePrint("Expected a mutable pointer to your world. Got `{s}`.", .{@typeName(@TypeOf(world))}));
+    var q = try world.query(world.frame_alloc, ztg.Query(.{rl.Camera2D}));
+
+    for (q.items(0)) |cam| {
+        rl.BeginMode2D(cam.*);
+        defer rl.EndMode2D();
+        try world.runStage(.rl_draw_thru_cam);
+    }
+}
 
 pub fn defaultLoop(world: anytype, comptime options: struct {
     clear_color: rl.Color = rl.BLACK,

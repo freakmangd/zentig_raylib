@@ -12,7 +12,7 @@ const MyWorld = ztg.WorldBuilder.init(&.{
 }).Build();
 
 // entities with both a Sprite and Transform component will
-// be drawn during the .draw stage
+// be drawn during the .rl_thru_cams stage, which is invoked with zrl.drawThroughCams
 const RlObject = struct {
     zrl.Sprite,
     ztg.base.Transform,
@@ -73,7 +73,8 @@ pub fn main() !void {
         rl.BeginDrawing();
         rl.ClearBackground(rl.BLACK);
 
-        // .draw stage must be called between rl.BeginDrawing() and rl.EndDrawing()
+        // .draw stage and drawThroughCams must be called between rl.BeginDrawing() and rl.EndDrawing()
+        try zrl.drawThroughCams(&world);
         try world.runStage(.draw);
 
         rl.EndDrawing();

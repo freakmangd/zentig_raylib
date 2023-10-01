@@ -21,8 +21,8 @@ pub fn main() !void {
 
 pub const Input = ztg.input.Build(
     zrl.InputWrapper,
-    .{},
-    .{ .horiz, .vert },
+    enum {},
+    enum { horiz, vert },
     .{ .max_controllers = 1 },
 );
 
@@ -79,7 +79,7 @@ const Player = struct {
         const vert = -inp.getAxis(0, .vert);
 
         for (q.items(0)) |tr| {
-            if (@fabs(horiz) > 0.3 or @fabs(vert) > 0.3) {
+            if (@abs(horiz) > 0.3 or @abs(vert) > 0.3) {
                 tr.translate(ztg.vec2(horiz, vert).mul(speed * time.dt).extend(0));
             }
         }

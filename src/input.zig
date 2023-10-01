@@ -179,16 +179,16 @@ pub const InputWrapper = struct {
     }
 };
 
-pub const mouse_buttons = [_]@TypeOf(.enum_literal){
-    .mouse_left,
-    .mouse_right,
-    .mouse_middle,
-    .mouse_side,
-    .mouse_extra,
-    .mouse_forward,
-    .mouse_back,
+pub const MouseButtons = enum {
+    mouse_left,
+    mouse_right,
+    mouse_middle,
+    mouse_side,
+    mouse_extra,
+    mouse_forward,
+    mouse_back,
 };
-pub const mouse_axes = [_]@TypeOf(.enum_literal){
-    .mouse_x,
-    .mouse_y,
+pub const MouseAxes = enum {
+    mouse_x,
+    mouse_y,
 };

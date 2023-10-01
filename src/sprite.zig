@@ -6,9 +6,10 @@ const zrl = @import("init.zig");
 const Sprite = @This();
 
 tex: rl.Texture2D,
+source: rl.Rectangle,
+
 color: rl.Color = rl.WHITE,
 pivot: ztg.Vec2 = .{},
-source: rl.Rectangle,
 
 pub const InitOptions = struct {
     color: rl.Color = rl.WHITE,
@@ -48,12 +49,39 @@ pub fn initAssert(com: ztg.Commands, file_name: [:0]const u8, options: InitOptio
     };
 }
 
+pub fn empty() Sprite {
+    return .{
+        .tex = std.mem.zeroInit(zrl.rl.Texture, .{}),
+        .source = zrl.rl.rectangle(0, 0, 0, 0),
+    };
+}
+
 pub fn setSource(self: *Sprite, x: f32, y: f32, w: f32, h: f32) void {
     self.source = .{ .x = x, .y = y, .width = w, .height = h };
 }
 
 pub fn setCentered(self: *Sprite) void {
     self.pivot = ztg.vec2(0.5, 0.5);
+}
+
+pub fn setFlippedHoriz(self: *Sprite, flip: bool) void {
+    if ((flip == true and self.source.width > 0) or (flip == false and self.source.width < 0)) {
+        self.flipHorizontal();
+    }
+}
+
+pub fn flipHorizontal(self: *Sprite) void {
+    self.source.width *= -1;
+}
+
+pub fn setFlippedVert(self: *Sprite, flip: bool) void {
+    if ((flip == true and self.source.height > 0) or (flip == false and self.source.height < 0)) {
+        self.flipVertical();
+    }
+}
+
+pub fn flipVertical(self: *Sprite) void {
+    self.source.height *= -1;
 }
 
 pub const Bundle = struct {
@@ -101,44 +129,38 @@ pub const Bundle = struct {
 pub fn include(comptime wb: *ztg.WorldBuilder) void {
     wb.addComponents(&.{Sprite});
     wb.addSystems(.{
-        .draw = .{dr_sprites},
+        .rl_draw_thru_cam = .{dr_sprites},
     });
 }
 
 const use_matrix = true;
-fn dr_sprites(cameras: ztg.Query(.{rl.Camera2D}), query: ztg.Query(.{ Sprite, ztg.base.GlobalTransform })) void {
-    for (cameras.items(0)) |cam| {
-        rl.BeginMode2D(cam.*);
+fn dr_sprites(query: ztg.Query(.{ Sprite, ztg.base.GlobalTransform })) void {
+    for (query.items(0), query.items(1)) |spr, gtr| {
+        rl.rlPushMatrix();
 
-        for (query.items(0), query.items(1)) |spr, gtr| {
-            rl.rlPushMatrix();
+        if (comptime use_matrix) {
+            rl.rlMultMatrixf(&ztg.zmath.matToArr(gtr.basis));
 
-            if (comptime use_matrix) {
-                rl.rlMultMatrixf(&ztg.zmath.matToArr(gtr.basis));
+            const pivot_scaled = spr.pivot.intoSimd() * @Vector(2, f32){ @abs(spr.source.width), @abs(spr.source.height) };
+            rl.rlTranslatef(-pivot_scaled[0], -pivot_scaled[1], 0);
+        } else {
+            const pos = gtr.getPos();
+            const rot = gtr.getRot();
+            const scale = gtr.getScale();
 
-                const pivot_scaled = spr.pivot.intoSimd() * @Vector(2, f32){ spr.source.width, spr.source.height };
-                rl.rlTranslatef(-pivot_scaled[0], -pivot_scaled[1], 0);
-            } else {
-                const pos = gtr.getPos();
-                const rot = gtr.getRot();
-                const scale = gtr.getScale();
+            rl.rlTranslatef(pos.x, pos.y, pos.z);
 
-                rl.rlTranslatef(pos.x, pos.y, pos.z);
+            rl.rlRotatef(std.math.radiansToDegrees(f32, rot.x), 1, 0, 0);
+            rl.rlRotatef(std.math.radiansToDegrees(f32, rot.y), 0, 1, 0);
+            rl.rlRotatef(std.math.radiansToDegrees(f32, rot.z), 0, 0, 1);
+            rl.rlScalef(scale.x, scale.y, scale.z);
 
-                rl.rlRotatef(std.math.radiansToDegrees(f32, rot.x), 1, 0, 0);
-                rl.rlRotatef(std.math.radiansToDegrees(f32, rot.y), 0, 1, 0);
-                rl.rlRotatef(std.math.radiansToDegrees(f32, rot.z), 0, 0, 1);
-                rl.rlScalef(scale.x, scale.y, scale.z);
-
-                const pivot_scaled = spr.pivot.intoSimd() * @Vector(3, f32){ spr.source.width, spr.source.height, 1 };
-                rl.rlTranslatef(-pivot_scaled[0], -pivot_scaled[1], -pivot_scaled[2]);
-            }
-
-            rl.DrawTextureRec(spr.tex, spr.source, rl.vec2zero(), spr.color);
-
-            rl.rlPopMatrix();
+            const pivot_scaled = spr.pivot.intoSimd() * @Vector(2, f32){ spr.source.width, spr.source.height };
+            rl.rlTranslatef(-pivot_scaled[0], -pivot_scaled[1], 0);
         }
 
-        rl.EndMode2D();
+        rl.DrawTextureRec(spr.tex, spr.source, rl.vec2zero(), spr.color);
+
+        rl.rlPopMatrix();
     }
 }

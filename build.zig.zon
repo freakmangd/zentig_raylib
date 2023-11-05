@@ -1,10 +1,11 @@
 .{
     .name = "zentig-raylib",
     .version = "0.1.0",
+    .paths = .{"src"},
     .dependencies = .{
         .raylib = .{
-            .url = "https://github.com/raysan5/raylib/archive/90f17499658275ace1e4d1bed1aa231e34ac38b6.tar.gz",
-            .hash = "1220d50a2701c46df69863c3160056e596b619bd0bcc8f64c8a7cf436da5e990e5eb",
+            .url = "https://github.com/freakmangd/raylib/archive/2bde30acf4769864afdf4233f75b6749a2da542c.tar.gz",
+            .hash = "122063dab17eb688f223a9e6fc4e6bd40ac12bcac2fe732084d893b2361f87fc3d79",
         },
         .zentig = .{
             .url = "https://github.com/freakmangd/zentig_ecs/archive/643af2797953a81e7fa4848389af1d2a2345a1bb.tar.gz",

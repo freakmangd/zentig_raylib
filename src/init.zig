@@ -86,6 +86,7 @@ pub fn defaultLoop(world: anytype, comptime options: struct {
         var draw_sec = optionalProfiling(options.use_profiler, "MAIN_LOOP draw");
         rl.BeginDrawing();
         rl.ClearBackground(options.clear_color);
+        try drawThroughCams(world);
         try world.runStage(.draw);
         rl.EndDrawing();
         draw_sec.end();

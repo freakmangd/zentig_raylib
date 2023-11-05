@@ -15,7 +15,7 @@ pub fn loadImage(assets: *zrl.Assets, path: [:0]const u8) !Image {
 
 pub fn onFrame(
     img: Image,
-    slice_method: ztg.base.anim.ImageSliceMethod,
+    slice_method: ztg.anim.ImageSliceMethod,
     slice_indexes: @Vector(2, usize),
     query: *zrl.Sprite,
 ) void {

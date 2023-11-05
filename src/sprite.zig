@@ -10,11 +10,13 @@ source: rl.Rectangle,
 
 color: rl.Color = rl.WHITE,
 pivot: ztg.Vec2 = .{},
+order: i32 = 0,
 
 pub const InitOptions = struct {
     color: rl.Color = rl.WHITE,
     pivot: ztg.Vec2 = .{},
     source: ?rl.Rectangle = null,
+    order: i32 = 0,
 };
 
 /// Checks for missing files and caches textures by file_name
@@ -37,6 +39,7 @@ pub fn initWith(com: ztg.Commands, file_name: [:0]const u8, options: InitOptions
     var self = try init(com, file_name);
     self.pivot = options.pivot;
     self.color = options.color;
+    self.order = options.order;
     if (options.source) |src| self.source = src;
     return self;
 }
@@ -134,8 +137,21 @@ pub fn include(comptime wb: *ztg.WorldBuilder) void {
 }
 
 const use_matrix = true;
-fn dr_sprites(query: ztg.Query(.{ Sprite, ztg.base.GlobalTransform })) void {
-    for (query.items(0), query.items(1)) |spr, gtr| {
+fn dr_sprites(query: ztg.Query(.{
+    Sprite,
+    ztg.base.GlobalTransform,
+    ?ztg.base.Active,
+})) void {
+    var sprites = query.items(0);
+    std.mem.sortUnstable(*Sprite, sprites, {}, struct {
+        fn f(_: void, a: *Sprite, b: *Sprite) bool {
+            return a.order < b.order;
+        }
+    }.f);
+
+    for (sprites, query.items(1), query.items(2)) |spr, gtr, active| {
+        if (active) |a| if (!a[0]) continue;
+
         rl.rlPushMatrix();
 
         if (comptime use_matrix) {
@@ -145,7 +161,7 @@ fn dr_sprites(query: ztg.Query(.{ Sprite, ztg.base.GlobalTransform })) void {
             rl.rlTranslatef(-pivot_scaled[0], -pivot_scaled[1], 0);
         } else {
             const pos = gtr.getPos();
-            const rot = gtr.getRot();
+            const rot = gtr.getRot().toEulerAngles();
             const scale = gtr.getScale();
 
             rl.rlTranslatef(pos.x, pos.y, pos.z);

@@ -1,6 +1,5 @@
 const std = @import("std");
 const ztg = @import("zentig");
-const rl = @import("raylib");
 
 const Self = @This();
 

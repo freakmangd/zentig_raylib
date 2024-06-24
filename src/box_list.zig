@@ -1,6 +1,7 @@
 const std = @import("std");
 const ztg = @import("zentig");
-const rl = @import("raylib");
+const zrl = @import("init.zig");
+const rl = zrl.rl;
 
 const Self = @This();
 
@@ -28,7 +29,7 @@ pub fn include(comptime wb: *ztg.WorldBuilder) void {
 }
 
 fn rectFromBoxAndGtr(box: *const Self, gtr: *const ztg.base.GlobalTransform) rl.Rectangle {
-    return rl.rectangleV(
+    return zrl.rectangleV(
         gtr.getPos().flatten().add(box.offset),
         box.size.scale(gtr.getScale().flatten()),
     );

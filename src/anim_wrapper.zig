@@ -1,7 +1,7 @@
 const std = @import("std");
 const ztg = @import("zentig");
-const rl = @import("raylib");
 const zrl = @import("init.zig");
+const rl = zrl.rl;
 
 pub const QueryType = zrl.Sprite;
 pub const LoadImageCtx = *zrl.Assets;
@@ -20,8 +20,8 @@ pub fn onFrame(
     query: *zrl.Sprite,
 ) void {
     const rect = switch (slice_method) {
-        .none => rl.rectangle(0, 0, @floatFromInt(img.width), @floatFromInt(img.height)),
-        .auto_slice => |as| rl.rectangle(
+        .none => zrl.rectangle(0, 0, @floatFromInt(img.width), @floatFromInt(img.height)),
+        .auto_slice => |as| zrl.rectangle(
             @floatFromInt(as.width * slice_indexes[0]),
             @floatFromInt(as.height * slice_indexes[1]),
             @floatFromInt(as.width),
@@ -31,11 +31,3 @@ pub fn onFrame(
     query.source = rect;
     query.tex = img;
 }
-
-pub const mixin = struct {
-    pub fn onAdded(ent: ztg.Entity, com: ztg.Commands) !void {
-        if (!com.checkEntHas(ent, zrl.Sprite)) {
-            try com.giveComponents(ent, .{zrl.Sprite.empty()});
-        }
-    }
-};

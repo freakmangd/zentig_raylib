@@ -4,12 +4,12 @@
     .paths = .{"."},
     .dependencies = .{
         .raylib = .{
-            .url = "https://github.com/freakmangd/raylib/archive/2bde30acf4769864afdf4233f75b6749a2da542c.tar.gz",
-            .hash = "122063dab17eb688f223a9e6fc4e6bd40ac12bcac2fe732084d893b2361f87fc3d79",
+            .url = "https://github.com/raysan5/raylib/archive/785ec74b92da4f91181ff7b1c89c8ae5ee19f1b6.tar.gz",
+            .hash = "122061d99c6478da93c8325aeed167af7930f6577c34da1335e733ade7bcf81021a1",
         },
         .zentig = .{
-            .url = "https://github.com/freakmangd/zentig_ecs/archive/0cf851ea2a3a7e959909d598f9e50afe9cd97631.tar.gz",
-			.hash = "1220fb3d7dee7d0ac129ec37ea18906f0d8a08a04a8ab5d52667fdb4c5b26b138850",
-		},
+            .url = "https://github.com/freakmangd/zentig_ecs/archive/e10b41545d5f465c652e3fdad76e2ac14f3e98ae.tar.gz",
+            .hash = "1220f3e3aba9e2a0488b90af9e6395861e10dc2ff2b35a7e90fc8938a1a81fcdfa54",
+        },
     },
 }

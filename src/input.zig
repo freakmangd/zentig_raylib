@@ -1,36 +1,36 @@
 const std = @import("std");
-const rl = @import("raylib");
+const rl = @import("init.zig").rl;
 
-pub fn kbButton(button: i32) InputWrapper.ButtonType {
+pub fn kbButton(button: i32) wrapper.ButtonType {
     return .{ .keyboard = button };
 }
 
-pub fn kbAxis(pos: i32, neg: i32) InputWrapper.AxisType {
+pub fn kbAxis(pos: i32, neg: i32) wrapper.AxisType {
     return .{ .keyboard = .{
         .positive = pos,
         .negative = neg,
     } };
 }
 
-pub fn gpButton(gamepad_num: i32, button: i32) InputWrapper.ButtonType {
+pub fn gpButton(gamepad_num: i32, button: i32) wrapper.ButtonType {
     return .{ .gamepad = .{
         .gamepad_num = gamepad_num,
         .button = button,
     } };
 }
 
-pub fn gpAxis(gamepad_num: i32, axis: i32) InputWrapper.AxisType {
+pub fn gpAxis(gamepad_num: i32, axis: i32) wrapper.AxisType {
     return .{ .gamepad = .{
         .gamepad_name = gamepad_num,
         .axis = axis,
     } };
 }
 
-pub fn msButton(button: i32) InputWrapper.ButtonType {
+pub fn msButton(button: i32) wrapper.ButtonType {
     return .{ .mouse = button };
 }
 
-pub const InputWrapper = struct {
+pub const wrapper = struct {
     pub const ButtonType = union(enum) {
         keyboard: i32,
         mouse: i32,

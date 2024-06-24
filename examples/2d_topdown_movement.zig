@@ -20,7 +20,7 @@ pub fn main() !void {
 }
 
 pub const Input = ztg.input.Build(
-    zrl.InputWrapper,
+    zrl.input.wrapper,
     enum {},
     enum { horiz, vert },
     .{ .max_controllers = 1 },
@@ -40,12 +40,12 @@ pub fn include(comptime wb: *ztg.WorldBuilder) void {
 }
 
 fn load(com: ztg.Commands, input: *Input) !void {
-    _ = try com.newEntWith(zrl.Camera2dBundle.init());
+    _ = try com.newEntWith(zrl.Camera2dBundle{});
 
     try input.addBindings(0, .{
         .axes = .{
-            .horiz = &.{zrl.kbAxis(rl.KEY_D, rl.KEY_A)},
-            .vert = &.{zrl.kbAxis(rl.KEY_W, rl.KEY_S)},
+            .horiz = &.{zrl.input.kbAxis(rl.KEY_D, rl.KEY_A)},
+            .vert = &.{zrl.input.kbAxis(rl.KEY_W, rl.KEY_S)},
         },
     });
 }
@@ -61,10 +61,10 @@ const Player = struct {
         });
     }
 
-    fn ld_spawnPlayer(com: ztg.Commands) !void {
+    fn ld_spawnPlayer(com: ztg.Commands, assets: *zrl.Assets) !void {
         _ = try zrl.util.newCenteredEnt(com, .{
             Player{},
-            try zrl.Sprite.Bundle.init(com, "examples/smile.png", .{
+            try zrl.Sprite.Bundle.init(assets, "examples/smile.png", .{
                 .pos = ztg.vec3(rl.GetScreenWidth(), rl.GetScreenHeight(), 0).div(2),
             }),
         });

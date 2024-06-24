@@ -1,12 +1,12 @@
 const std = @import("std");
-const rl = @import("raylib");
 const ztg = @import("zentig");
 const zrl = @import("init.zig");
+const rl = zrl.rl;
 
 const Sprite = @This();
 
-tex: rl.Texture2D,
-source: rl.Rectangle,
+tex: rl.Texture2D = std.mem.zeroInit(zrl.rl.Texture, .{}),
+source: rl.Rectangle = zrl.rectangle(0, 0, 0, 0),
 
 color: rl.Color = rl.WHITE,
 pivot: ztg.Vec2 = .{},
@@ -20,8 +20,7 @@ pub const InitOptions = struct {
 };
 
 /// Checks for missing files and caches textures by file_name
-pub fn init(com: ztg.Commands, file_name: [:0]const u8) !Sprite {
-    var assets = com.getResPtr(zrl.Assets);
+pub fn init(assets: *zrl.Assets, file_name: [:0]const u8) !Sprite {
     const tex = try assets.texture(file_name);
 
     return .{
@@ -35,8 +34,8 @@ pub fn init(com: ztg.Commands, file_name: [:0]const u8) !Sprite {
     };
 }
 
-pub fn initWith(com: ztg.Commands, file_name: [:0]const u8, options: InitOptions) !Sprite {
-    var self = try init(com, file_name);
+pub fn initWith(assets: *zrl.Assets, file_name: [:0]const u8, options: InitOptions) !Sprite {
+    var self = try init(assets, file_name);
     self.pivot = options.pivot;
     self.color = options.color;
     self.order = options.order;
@@ -45,17 +44,20 @@ pub fn initWith(com: ztg.Commands, file_name: [:0]const u8, options: InitOptions
 }
 
 /// Asserts that the file exists and that there is no OOM error, panics otherwise
-pub fn initAssert(com: ztg.Commands, file_name: [:0]const u8, options: InitOptions) Sprite {
-    return initWith(com, file_name, options) catch |err| switch (err) {
+pub fn initAssert(assets: *zrl.Assets, file_name: [:0]const u8, options: InitOptions) Sprite {
+    return initWith(assets, file_name, options) catch |err| switch (err) {
         error.FileNotFound => std.debug.panic("Could not find file {s}", .{file_name}),
         error.OutOfMemory => std.debug.panic("OOM error for sprite texture index", .{}),
     };
 }
 
-pub fn empty() Sprite {
+pub fn emptyWith(options: InitOptions) Sprite {
     return .{
         .tex = std.mem.zeroInit(zrl.rl.Texture, .{}),
-        .source = zrl.rl.rectangle(0, 0, 0, 0),
+        .source = zrl.rectangle(0, 0, 0, 0),
+        .pivot = options.pivot,
+        .color = options.color,
+        .order = options.order,
     };
 }
 
@@ -90,12 +92,12 @@ pub fn flipVertical(self: *Sprite) void {
 pub const Bundle = struct {
     pub const is_component_bundle = true;
 
-    sprite: zrl.Sprite,
-    transform: ztg.base.Transform,
+    sprite: zrl.Sprite = .{},
+    transform: ztg.base.Transform = .{},
 
-    pub fn init(com: ztg.Commands, file_name: [:0]const u8, options: BundleInitOptions) !Bundle {
+    pub fn init(assets: *zrl.Assets, file_name: [:0]const u8, options: BundleInitOptions) !Bundle {
         return .{
-            .sprite = try zrl.Sprite.initWith(com, file_name, .{
+            .sprite = try zrl.Sprite.initWith(assets, file_name, .{
                 .color = options.color,
                 .pivot = options.pivot,
                 .source = options.source,
@@ -108,12 +110,29 @@ pub const Bundle = struct {
         };
     }
 
-    pub fn initAssert(com: ztg.Commands, file_name: [:0]const u8, options: BundleInitOptions) Bundle {
+    pub fn initAssert(assets: *zrl.Assets, file_name: [:0]const u8, options: BundleInitOptions) Bundle {
         return .{
-            .sprite = zrl.Sprite.initAssert(com, file_name, .{
+            .sprite = zrl.Sprite.initAssert(assets, file_name, .{
                 .color = options.color,
                 .pivot = options.pivot,
                 .source = options.source,
+                .order = options.order,
+            }),
+            .transform = ztg.base.Transform.initWith(.{
+                .pos = options.pos,
+                .rot = options.rot,
+                .scale = options.scale,
+            }),
+        };
+    }
+
+    pub fn emptyWith(options: BundleInitOptions) Bundle {
+        return .{
+            .sprite = zrl.Sprite.emptyWith(.{
+                .pivot = options.pivot,
+                .order = options.order,
+                .source = options.source,
+                .color = options.color,
             }),
             .transform = ztg.base.Transform.initWith(.{
                 .pos = options.pos,
@@ -142,7 +161,7 @@ fn dr_sprites(query: ztg.Query(.{
     ztg.base.GlobalTransform,
     ?ztg.base.Active,
 })) void {
-    var sprites = query.items(0);
+    const sprites = query.items(0);
     std.mem.sortUnstable(*Sprite, sprites, {}, struct {
         fn f(_: void, a: *Sprite, b: *Sprite) bool {
             return a.order < b.order;
@@ -175,7 +194,7 @@ fn dr_sprites(query: ztg.Query(.{
             rl.rlTranslatef(-pivot_scaled[0], -pivot_scaled[1], 0);
         }
 
-        rl.DrawTextureRec(spr.tex, spr.source, rl.vec2zero(), spr.color);
+        rl.DrawTextureRec(spr.tex, spr.source, .{}, spr.color);
 
         rl.rlPopMatrix();
     }

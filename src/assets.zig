@@ -1,7 +1,7 @@
 const std = @import("std");
 const ztg = @import("zentig");
 const zrl = @import("init.zig");
-const rl = @import("raylib");
+const rl = zrl.rl;
 
 const Self = @This();
 

@@ -208,7 +208,11 @@ pub inline fn fromSimd(v: @Vector(3, f32)) rl.Vector3 {
     return @bitCast(v);
 }
 
-pub inline fn toVec(v: anytype) ztg.math.VectorOfLen(vectorLen(v)) {
+pub inline fn toVec(v: anytype) ztg.math.VectorOfLen(vectorLen(v)).? {
+    return @bitCast(v);
+}
+
+pub inline fn fromVec(v: anytype) VectorOfLen(@typeInfo(@TypeOf(v)).Struct.fields.len).? {
     return @bitCast(v);
 }
 
